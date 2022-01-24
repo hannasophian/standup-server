@@ -32,13 +32,45 @@ app.get("/", (req, res) => {
 
 // Return user ids and names
 app.get("/users", async (req, res) => {
-  const dbres = await client.query("select id, name from users");
-  if (dbres.rowCount === 0) {
-    res.status(400).json({ status: "failed", message: "response is empty" });
-  } else {
-    res.status(200).json({ status: "success", data: dbres.rows });
+  try {
+    const dbres = await client.query("select id, name from users");
+    if (dbres.rowCount === 0) {
+      res.status(400).json({ status: "failed", message: "response is empty" });
+    } else {
+      res.status(200).json({ status: "success", data: dbres.rows });
+    }
+  } catch (error) {
+    console.error(error)
   }
 });
+
+// Post new standup
+app.post<{team_id: number}>("/standups/:team_id", async (req, res) => {
+  const team_id = req.params.team_id;
+  // Check if team_id is valid
+  try {
+    const isTeam = await client.query("Select * from teams where id = $1", [team_id]);
+    if (isTeam.rowCount === 0) {
+      res.status(404).json({ status: "failed", message: `No team with ID ${team_id}` });
+    }
+  } finally {
+    try {
+      let {time, chair_id, meeting_link, notes} = req.body;
+      const dbres = await client.query("INSERT INTO standups (team_id, time, chair_id, meeting_link, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *;", [team_id, time, chair_id, meeting_link, notes]);
+      if (dbres.rowCount !== 0) {
+        res.status(200).json({status: "success", data:dbres.rows})
+      } else {
+        res.status(400).json({status:"failed"})
+      }
+    } catch (error) {
+      console.error(error);
+    } 
+  }
+
+  
+  // Post to database
+  // console.log(team_id);
+})
 
 // POST /items
 // app.post<{}, {}, DbItem>("/items", (req, res) => {
