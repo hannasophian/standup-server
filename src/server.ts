@@ -59,7 +59,7 @@ app.post<{ team_id: number }>("/standups/:team_id", async (req, res) => {
     }
   } finally {
     try {
-      let { time, chair_id, meeting_link, notes } = req.body;
+      const { time, chair_id, meeting_link, notes } = req.body;
       const dbres = await client.query(
         "INSERT INTO standups (team_id, time, chair_id, meeting_link, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
         [team_id, time, chair_id, meeting_link, notes]
