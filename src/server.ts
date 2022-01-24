@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import filePath from "./filePath";
 import { Client } from "pg";
 
-
 const app = express();
 
 /** Parses JSON data in a request automatically */
@@ -14,7 +13,6 @@ app.use(cors());
 
 // read in contents of any environment variables in the .env file
 dotenv.config();
-
 
 const herokuSSLSetting = { rejectUnauthorized: false };
 const sslSetting = process.env.LOCAL ? false : herokuSSLSetting;
@@ -40,13 +38,7 @@ app.get("/users", async (req, res) => {
   } else {
     res.status(200).json({ status: "success", data: dbres.rows });
   }
-})
-
-
-
-
-
-
+});
 
 // POST /items
 // app.post<{}, {}, DbItem>("/items", (req, res) => {
