@@ -40,37 +40,64 @@ app.get("/users", async (req, res) => {
       res.status(200).json({ status: "success", data: dbres.rows });
     }
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 });
 
 // Post new standup
-app.post<{team_id: number}>("/standups/:team_id", async (req, res) => {
+app.post<{ team_id: number }>("/standups/:team_id", async (req, res) => {
   const team_id = req.params.team_id;
   // Check if team_id is valid
   try {
-    const isTeam = await client.query("Select * from teams where id = $1", [team_id]);
+    const isTeam = await client.query("Select * from teams where id = $1", [
+      team_id,
+    ]);
     if (isTeam.rowCount === 0) {
-      res.status(404).json({ status: "failed", message: `No team with ID ${team_id}` });
+      res
+        .status(404)
+        .json({ status: "failed", message: `No team with ID ${team_id}` });
     }
   } finally {
     try {
-      let {time, chair_id, meeting_link, notes} = req.body;
-      const dbres = await client.query("INSERT INTO standups (team_id, time, chair_id, meeting_link, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *;", [team_id, time, chair_id, meeting_link, notes]);
+      let { time, chair_id, meeting_link, notes } = req.body;
+      const dbres = await client.query(
+        "INSERT INTO standups (team_id, time, chair_id, meeting_link, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
+        [team_id, time, chair_id, meeting_link, notes]
+      );
       if (dbres.rowCount !== 0) {
-        res.status(200).json({status: "success", data:dbres.rows})
+        res.status(200).json({ status: "success", data: dbres.rows });
       } else {
-        res.status(400).json({status:"failed"})
+        res.status(400).json({ status: "failed" });
       }
     } catch (error) {
       console.error(error);
-    } 
+    }
   }
 
-  
   // Post to database
   // console.log(team_id);
-})
+});
+
+// GET previous stand ups
+app.get<{ team_id: number }>(
+  "/standups/previous/:team_id",
+  async (req, res) => {
+    try {
+      const team_id = req.params.team_id;
+      const dbres = await client.query(
+        "Select * from standups where team_id = $1 and time < now() order by time desc limit 5;",
+        [team_id]
+      );
+      if (dbres.rowCount !== 0) {
+        res.status(200).json({ status: "success", data: dbres.rows });
+      } else {
+        res.status(400).json({ status: "failed" });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
 
 // POST /items
 // app.post<{}, {}, DbItem>("/items", (req, res) => {
@@ -79,36 +106,6 @@ app.post<{team_id: number}>("/standups/:team_id", async (req, res) => {
 //   const postData = req.body;
 //   const createdSignature = addDbItem(postData);
 //   res.status(201).json(createdSignature);
-// });
-
-// // GET /items/:id
-// app.get<{ id: string }>("/items/:id", (req, res) => {
-//   const matchingSignature = getDbItemById(parseInt(req.params.id));
-//   if (matchingSignature === "not found") {
-//     res.status(404).json(matchingSignature);
-//   } else {
-//     res.status(200).json(matchingSignature);
-//   }
-// });
-
-// // DELETE /items/:id
-// app.delete<{ id: string }>("/items/:id", (req, res) => {
-//   const matchingSignature = getDbItemById(parseInt(req.params.id));
-//   if (matchingSignature === "not found") {
-//     res.status(404).json(matchingSignature);
-//   } else {
-//     res.status(200).json(matchingSignature);
-//   }
-// });
-
-// // PATCH /items/:id
-// app.patch<{ id: string }, {}, Partial<DbItem>>("/items/:id", (req, res) => {
-//   const matchingSignature = updateDbItemById(parseInt(req.params.id), req.body);
-//   if (matchingSignature === "not found") {
-//     res.status(404).json(matchingSignature);
-//   } else {
-//     res.status(200).json(matchingSignature);
-//   }
 // });
 
 const port = process.env.PORT;
