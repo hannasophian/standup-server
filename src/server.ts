@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 // Return user ids and names
 app.get("/users", async (req, res) => {
   try {
-    const dbres = await client.query("select id, name from users");
+    const dbres = await client.query("select id, name, team_id from users");
     if (dbres.rowCount === 0) {
       res.status(400).json({ status: "failed", message: "response is empty" });
     } else {
@@ -99,14 +99,40 @@ app.get<{ team_id: number }>(
   }
 );
 
-// POST /items
-// app.post<{}, {}, DbItem>("/items", (req, res) => {
-//   // to be rigorous, ought to handle non-conforming request bodies
-//   // ... but omitting this as a simplification
-//   const postData = req.body;
-//   const createdSignature = addDbItem(postData);
-//   res.status(201).json(createdSignature);
-// });
+// Get the next standup
+app.get<{ team_id: number }>("/standups/next/:team_id", async (req, res) => {
+  const team_id = req.params.team_id;
+
+  // Check that team exists
+  try {
+    const isTeam = await client.query("Select * from teams where id = $1", [
+      team_id,
+    ]);
+    if (isTeam.rowCount === 0) {
+      res
+        .status(404)
+        .json({ status: "failed", message: `No team with ID ${team_id}` });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    const dbres = await client.query(
+      "select * from standups where team_id = $1 and time > now() order by time asc limit 1;",
+      [team_id]
+    );
+    if (dbres.rowCount !== 0) {
+      res.status(200).json({ status: "success", data: dbres.rows });
+    } else {
+      res
+        .status(401)
+        .json({ status: "failed", message: "no upcoming standups" });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+});
 
 const port = process.env.PORT;
 if (!port) {
