@@ -198,12 +198,10 @@ app.put<{ standup_id: number }>(
       );
       // console.log("Hey")
       if (isTeam.rowCount === 0) {
-        res
-          .status(404)
-          .json({
-            status: "failed",
-            message: `No standup with ID ${standup_id}`,
-          });
+        res.status(404).json({
+          status: "failed",
+          message: `No standup with ID ${standup_id}`,
+        });
       }
     } finally {
       try {
