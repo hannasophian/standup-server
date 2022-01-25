@@ -171,13 +171,11 @@ app.get<{ standup_id: number }>(
       if (dbres.rowCount !== 0) {
         res.status(200).json({ status: "success", data: dbres.rows });
       } else {
-        res
-          .status(200)
-          .json({
-            status: "success",
-            data: dbres.rows,
-            message: "No activities for this standup",
-          });
+        res.status(200).json({
+          status: "success",
+          data: dbres.rows,
+          message: "No activities for this standup",
+        });
       }
     } catch (error) {
       console.error(error);
