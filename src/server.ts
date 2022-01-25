@@ -160,6 +160,30 @@ app.get<{ team_id: number }>("/teamname/:team_id", async (req, res) => {
   }
 });
 
+app.get<{ standup_id: number }>(
+  "/standups/activities/:standup_id",
+  async (req, res) => {
+    try {
+      const dbres = await client.query(
+        "SELECT * FROM activities WHERE standup_id = $1;",
+        [req.params.standup_id]
+      );
+      if (dbres.rowCount !== 0) {
+        res.status(200).json({ status: "success", data: dbres.rows });
+      } else {
+        res.status(200).json({
+          status: "success",
+          data: dbres.rows,
+          message: "No activities for this standup",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ status: "failed" });
+    }
+  }
+);
+
 const port = process.env.PORT;
 if (!port) {
   throw "Missing PORT environment variable.  Set it in .env file.";
