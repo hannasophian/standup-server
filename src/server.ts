@@ -85,7 +85,7 @@ app.get<{ team_id: number }>(
     try {
       const team_id = req.params.team_id;
       const dbres = await client.query(
-        "Select * from standups where team_id = $1 and time < now() order by time desc limit 5;",
+        "Select standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time < now() order by time desc limit 5;",
         [team_id]
       );
       if (dbres.rowCount !== 0) {
@@ -116,10 +116,18 @@ app.get<{ team_id: number }>("/standups/next/:team_id", async (req, res) => {
   } catch (error) {
     console.error(error);
   }
-
+  /**
+ * id": 3,
+            "team_id": 1,
+            "time": "2022-01-25T09:00:00.000Z",
+            "chair_id": 3,
+            "meeting_link": null,
+            "notes": null,
+            "name": "David",
+ */
   try {
     const dbres = await client.query(
-      "select * from standups where team_id = $1 and time > now() order by time asc limit 1;",
+      "select standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 1;",
       [team_id]
     );
     if (dbres.rowCount !== 0) {
