@@ -184,6 +184,46 @@ app.get<{ standup_id: number }>(
   }
 );
 
+// updating notes
+app.put<{ standup_id: number }>(
+  "/standups/notes/:standup_id",
+  async (req, res) => {
+    const standup_id = req.params.standup_id;
+
+    try {
+      // Check if stand up exists
+      const isTeam = await client.query(
+        "Select * from standups where id = $1",
+        [standup_id]
+      );
+      // console.log("Hey")
+      if (isTeam.rowCount === 0) {
+        res
+          .status(404)
+          .json({
+            status: "failed",
+            message: `No standup with ID ${standup_id}`,
+          });
+      }
+    } finally {
+      try {
+        const { notes } = req.body;
+        const dbres = await client.query(
+          "update standups set notes = $1 where id = $2 returning *;",
+          [notes, standup_id]
+        );
+        if (dbres.rowCount !== 0) {
+          res.status(200).json({ status: "success", data: dbres.rows });
+        } else {
+          res.status(400).json({ status: "failed" });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+);
+
 const port = process.env.PORT;
 if (!port) {
   throw "Missing PORT environment variable.  Set it in .env file.";
