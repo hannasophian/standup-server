@@ -222,6 +222,22 @@ app.put<{ standup_id: number }>(
   }
 );
 
+// get teammates for given team_id
+app.get<{ team_id: number }>("/teams/members/:team_id", async (req, res) => {
+  try {
+    const dbres = await client.query("select * from users where team_id = $1", [
+      req.params.team_id,
+    ]);
+    if (dbres.rowCount === 0) {
+      res.status(400).json({ status: "failed", message: "response is empty" });
+    } else {
+      res.status(200).json({ status: "success", data: dbres.rows });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 const port = process.env.PORT;
 if (!port) {
   throw "Missing PORT environment variable.  Set it in .env file.";
