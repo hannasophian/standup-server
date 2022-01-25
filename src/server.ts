@@ -134,6 +134,24 @@ app.get<{ team_id: number }>("/standups/next/:team_id", async (req, res) => {
   }
 });
 
+app.get<{ team_id: number }>("/teamname/:team_id", async (req, res) => {
+  const team_id = req.params.team_id;
+  try {
+    const dbres = await client.query("select * from teams where id = $1", [
+      team_id,
+    ]);
+    if (dbres.rowCount === 0) {
+      res
+        .status(404)
+        .json({ status: "failed", message: `No team with ID ${team_id}` });
+    } else {
+      res.status(200).json({ status: "success", data: dbres.rows[0] });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 const port = process.env.PORT;
 if (!port) {
   throw "Missing PORT environment variable.  Set it in .env file.";
