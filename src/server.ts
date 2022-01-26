@@ -238,6 +238,36 @@ app.get<{ team_id: number }>("/teams/members/:team_id", async (req, res) => {
   }
 });
 
+app.post<{ standup_id: number }>("/activity/:standup_id", async (req, res) => {
+  const standup_id = req.params.standup_id;
+  try {
+    const isTeam = await client.query("Select * from standups where id = $1", [
+      standup_id,
+    ]);
+    if (isTeam.rowCount === 0) {
+      res.status(404).json({
+        status: "failed",
+        message: `No standup with ID ${standup_id}`,
+      });
+    }
+  } finally {
+    try {
+      const { user_id, name, url, comment } = req.body;
+      const dbres = await client.query(
+        "insert into activities (standup_id, user_id, name, url, comment) values ($1, $2, $3, $4, $5) returning *;",
+        [standup_id, user_id, name, url, comment]
+      );
+      if (dbres.rowCount !== 0) {
+        res.status(200).json({ status: "success", data: dbres.rows });
+      } else {
+        res.status(400).json({ status: "failed" });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+});
+
 const port = process.env.PORT;
 if (!port) {
   throw "Missing PORT environment variable.  Set it in .env file.";
