@@ -245,12 +245,10 @@ app.post<{ standup_id: number }>("/activity/:standup_id", async (req, res) => {
       standup_id,
     ]);
     if (isTeam.rowCount === 0) {
-      res
-        .status(404)
-        .json({
-          status: "failed",
-          message: `No standup with ID ${standup_id}`,
-        });
+      res.status(404).json({
+        status: "failed",
+        message: `No standup with ID ${standup_id}`,
+      });
     }
   } finally {
     try {
