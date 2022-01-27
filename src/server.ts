@@ -59,10 +59,10 @@ app.post<{ team_id: number }>("/standups/:team_id", async (req, res) => {
     }
   } finally {
     try {
-      const { time, chair_id, meeting_link, notes } = req.body;
+      const { time, chair_id, meeting_link } = req.body;
       const dbres = await client.query(
-        "INSERT INTO standups (team_id, time, chair_id, meeting_link, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
-        [team_id, time, chair_id, meeting_link, notes]
+        "INSERT INTO standups (team_id, time, chair_id, meeting_link) VALUES ($1, $2, $3, $4) RETURNING *;",
+        [team_id, time, chair_id, meeting_link]
       );
       if (dbres.rowCount !== 0) {
         res.status(200).json({ status: "success", data: dbres.rows });
