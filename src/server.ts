@@ -116,27 +116,14 @@ app.get<{ team_id: number }>("/standups/next/:team_id", async (req, res) => {
   } catch (error) {
     console.error(error);
   }
-  /**
- * id": 3,
-            "team_id": 1,
-            "time": "2022-01-25T09:00:00.000Z",
-            "chair_id": 3,
-            "meeting_link": null,
-            "notes": null,
-            "name": "David",
- */
+
   try {
     const dbres = await client.query(
       "select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 1;",
       [team_id]
     );
-    if (dbres.rowCount !== 0) {
-      res.status(200).json({ status: "success", data: dbres.rows });
-    } else {
-      res
-        .status(401)
-        .json({ status: "failed", message: "no upcoming standups" });
-    }
+
+    res.status(200).json({ status: "success", data: dbres.rows });
   } catch (error) {
     console.error(error);
   }
