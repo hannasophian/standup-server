@@ -10,7 +10,10 @@ const app = express();
 app.use(express.json());
 /** To allow 'Cross-Origin Resource Sharing': https://en.wikipedia.org/wiki/Cross-origin_resource_sharing */
 // app.use(cors());
-const allowedOrigins = ["http://localhost:3000", "http://yourapp.com"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://stand-up.netlify.app/",
+];
 app.use(
   cors({
     origin: function (origin, callback) {
