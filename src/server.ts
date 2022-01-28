@@ -336,6 +336,35 @@ app.put<{ standup_id: number }>("/standups/:standup_id", async (req, res) => {
   }
 });
 
+app.get<{ team_id: number }>("/standups/future/:team_id", async (req, res) => {
+  const team_id = req.params.team_id;
+
+  // Check that team exists
+  try {
+    const isTeam = await client.query("Select * from teams where id = $1", [
+      team_id,
+    ]);
+    if (isTeam.rowCount === 0) {
+      res
+        .status(404)
+        .json({ status: "failed", message: `No team with ID ${team_id}` });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  try {
+    const dbres = await client.query(
+      "select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 5;",
+      [team_id]
+    );
+
+    res.status(200).json({ status: "success", data: dbres.rows });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 const port = process.env.PORT;
 if (!port) {
   throw "Missing PORT environment variable.  Set it in .env file.";
