@@ -53,7 +53,9 @@ app.get("/", (req, res) => {
 // Return user ids and names
 app.get("/users", async (req, res) => {
   try {
-    const dbres = await client.query("select id, name, team_id from users");
+    const dbres = await client.query(
+      "select id, name, team_id, image_url from users"
+    );
     if (dbres.rowCount === 0) {
       res.status(400).json({ status: "failed", message: "response is empty" });
     } else {
