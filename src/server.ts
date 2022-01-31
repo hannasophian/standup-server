@@ -13,7 +13,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:3000",
   "https://stand-up.netlify.app",
-  "*stand-up.netlify.app"
+  "*stand-up.netlify.app",
 ];
 app.use(
   cors({
@@ -374,6 +374,37 @@ if (!port) {
 }
 app.listen(port, () => {
   console.log(`Server is up and running on port ${port}`);
+});
+
+app.put<{ user_id: number }>("/users/:user_id", async (req, res) => {
+  const user_id = req.params.user_id;
+
+  try {
+    const isTeam = await client.query("Select * from users where id = $1", [
+      user_id,
+    ]);
+    if (isTeam.rowCount === 0) {
+      res.status(404).json({
+        status: "failed",
+        message: `No user with ID ${user_id}`,
+      });
+    }
+  } finally {
+    try {
+      const { name, team_id, image_url } = req.body;
+      const dbres = await client.query(
+        "update users set name = $1, team_id= $2, image_url = $3 where id= $4 returning *;",
+        [name, team_id, image_url, user_id]
+      );
+      if (dbres.rowCount !== 0) {
+        res.status(200).json({ status: "success", data: dbres.rows });
+      } else {
+        res.status(400).json({ status: "failed" });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
 });
 
 export default app;
