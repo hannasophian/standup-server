@@ -13,6 +13,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:3000",
   "https://stand-up.netlify.app",
+  "*stand-up.netlify.app"
 ];
 app.use(
   cors({
