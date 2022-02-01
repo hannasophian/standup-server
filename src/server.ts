@@ -108,7 +108,7 @@ app.get<{ team_id: number }>(
     try {
       const team_id = req.params.team_id;
       const dbres = await client.query(
-        "Select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time < now() order by time desc limit 5;",
+        "Select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name, users.image_url as chair_image from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time < now() order by time desc limit 5;",
         [team_id]
       );
       if (dbres.rowCount !== 0) {
@@ -142,7 +142,7 @@ app.get<{ team_id: number }>("/standups/next/:team_id", async (req, res) => {
 
   try {
     const dbres = await client.query(
-      "select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 1;",
+      "select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name, users.image_url as chair_image from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 1;",
       [team_id]
     );
 
@@ -358,7 +358,7 @@ app.get<{ team_id: number }>("/standups/future/:team_id", async (req, res) => {
 
   try {
     const dbres = await client.query(
-      "select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 5;",
+      "select standups.id, standups.team_id, standups.time, standups.chair_id, standups.meeting_link, standups.notes, users.name as chair_name, users.image_url as chair_image from standups join users on standups.chair_id = users.id where standups.team_id = $1 and time > now() order by time asc limit 5;",
       [team_id]
     );
 
